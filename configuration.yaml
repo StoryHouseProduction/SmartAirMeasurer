@@ -1,0 +1,48 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+homeassistant:
+  auth_providers:
+    - type: trusted_networks
+      trusted_networks:
+        - 127.0.0.1
+        - ::1
+      trusted_users:
+        127.0.0.1: user_id
+        ::1: user_id
+      allow_bypass_login: true
+    - type: homeassistant
+
+sensor:
+  - platform: serial
+    serial_port: /dev/ttyACM0
+# Template Sensors to parse the JSON dat
+template:
+  sensor:
+    - name: Temperature
+      unit_of_measurement: "°C"
+      state: "{{ (states('sensor.serial_sensor') | from_json).temp | float(default=0) }}"
+
+    - name: Humidity
+      unit_of_measurement: "%"
+      state: "{{ (states('sensor.serial_sensor') | from_json).humid | float(default=0) }}"
+
+    - name: Carbon PPM
+      unit_of_measurement: "ppm"
+      state: "{{ (states('sensor.serial_sensor') | from_json).carbon_ppm | float(default=0) }}"
+
+    - name: Dust Concentration
+      unit_of_measurement: "mg/m³"
+      state: "{{ (states('sensor.serial_sensor') | from_json).dust_mg | float(default=0) }}"
+
+notify:
+  - name: line_notification
+    platform: notify_line
+    access_token: 'PASTE_YOUR_PERSONAL_TOKEN_HERE'
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
